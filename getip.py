@@ -1,4 +1,3 @@
-
 ############################################
 # This file gives function getifip() which
 # you can use to learn the IP address of the
@@ -11,6 +10,7 @@
 import socket, fcntl, struct
 import netifaces
 
+
 #############################################
 # Retrieves the ip of the network card with
 # an IPv4 address that is not 127.0.0.1.
@@ -20,29 +20,21 @@ import netifaces
 # if no such interface is detected
 ##############################################
 def getifip():
-
     # Get all the network interfaces on the system
     networkInterfaces = netifaces.interfaces()
-
     # The IP address
-    ipAddr = None
-
+    ip_address = None
     # Go through all the interfaces
     for netFace in networkInterfaces:
-
         # The IP address of the interface
-        addr = netifaces.ifaddresses(netFace)[2][0]['addr']
-
+        address = netifaces.ifaddresses(netFace)[2][0]['addr']
         # Get the IP address
-        if not addr == "127.0.0.1":
-
+        if not address == "127.0.0.1":
             # Save the IP addrss and break
-            ipAddr = addr
+            ip_address = address
             break
+    return ip_address
 
-    return ipAddr
 
-
-print getifip()
-
-#print("The ip of the current system is: " + getifip("eth0"))
+print(getifip())
+print("The ip of the current system is: " + getifip())
