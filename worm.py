@@ -6,6 +6,7 @@ import netinfo
 import os
 import socket
 from hostscan import getHostsOnTheSameNetwork
+from getip import getifip
 
 # The list of credentials to attempt
 credList = [
@@ -144,9 +145,7 @@ def getMyIP(interface):
 
     # TODO: Change this to retrieve and
     # return the IP of the current system.
-    host_name = socket.gethostname()
-    ip_addr = socket.gethostbyname(host_name)
-    
+    ip_addr = getifip()
     return ip_addr
 
 #######################################################
@@ -159,9 +158,10 @@ def getHostsOnTheSameNetwork():
     # for hosts on the same network
     # and return the list of discovered
     # IP addresses.
+    listofIPs = getHostsOnTheSameNetwork()
     other_systems = []
-    for i in liveHosts
-        host_name = socket.gethostname(liveHosts[i])
+    for i in listofIPs
+        host_name = socket.gethostname(listofIPs[i])
         other_systems.append(host_name)
     
     return other_systems
