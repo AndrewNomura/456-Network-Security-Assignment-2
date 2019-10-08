@@ -158,14 +158,9 @@ def getHostsOnTheSameNetwork():
     # for hosts on the same network
     # and return the list of discovered
     # IP addresses.
-    listofIPs = getHostsOnTheSameNetwork()
-    other_systems = []
-    for i in listofIPs
-        host_name = socket.gethostname(listofIPs[i])
-        other_systems.append(host_name)
-    
-    return other_systems
+    sameNetworks = getHostsOnTheSameNetwork
 
+    return sameNetworks
 #######################################################
 # Clean by removing the marker and copied worm program
 # @param sshClient - the instance of the SSH client
