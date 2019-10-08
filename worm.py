@@ -5,7 +5,7 @@ import nmap
 import netinfo
 import os
 import socket
-from hostscan import live_hosts
+from hostscan import getHostsOnTheSameNetwork
 
 # The list of credentials to attempt
 credList = [
@@ -160,8 +160,8 @@ def getHostsOnTheSameNetwork():
     # and return the list of discovered
     # IP addresses.
     other_systems = []
-    for i in live_hosts
-        host_name = socket.gethostname(live_hosts[i])
+    for i in liveHosts
+        host_name = socket.gethostname(liveHosts[i])
         other_systems.append(host_name)
     
     return other_systems
