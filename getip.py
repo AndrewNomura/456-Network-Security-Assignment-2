@@ -7,7 +7,7 @@
 ############################################
 
 # The necessary files
-import socket, fcntl, struct
+# import socket, fcntl, struct
 import netifaces
 
 
@@ -27,14 +27,14 @@ def getifip():
     # Go through all the interfaces
     for netFace in networkInterfaces:
         # The IP address of the interface
-        address = netifaces.ifaddresses(netFace)[2][0]['addr']
+        address = netifaces.ifaddresses(netFace)  # [2][0]['addr']
         # Get the IP address
         if not address == "127.0.0.1":
-            # Save the IP addrss and break
+            # Save the IP address and break
             ip_address = address
             break
     return ip_address
 
 
 print(getifip())
-print("The ip of the current system is: " + getifip())
+# print("The ip of the current system is: " + getifip())
