@@ -4,3 +4,5 @@ MIT Copyright
 Andrew Nomura   drew97.nomura@csu.fullerton.edu
 
 Dustin Vuog     
+
+Kevin Nakashima klnakashima@csu.fullerton.edu
