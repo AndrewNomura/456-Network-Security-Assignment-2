@@ -345,7 +345,7 @@ for host in networkHosts:
 # If command line args exist and are -c||--clean
 if len(sys.argv) >=2 and (sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
 	# If argument is added and this machine is infected, then we are a victim machine
-	if isInfectedSystem:
+	if isInfectedSystem():
 		# This will throw an OSError if the file does not exist
 		os.remove(INFECTED_MARKER_FILE)
 	# If we are not infected then we are the original cleaning machine
